@@ -10,6 +10,9 @@ import {
 const Login: NextPage = () => {
   const [phoneNumber, setPhoneNumber] = useState<string>("");
   const [auth, setAuth] = useState<any>();
+  const [confirmed, setConfirmed] = useState<boolean>(false);
+  const [confirmationCode, setConfirmationCode] = useState<string>("");
+  const [confirmationResult, setConfirmationResult] = useState<any>();
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -24,7 +27,7 @@ const Login: NextPage = () => {
       auth
     );
 
-    setAuth(auth)
+    setAuth(auth);
   }, []);
 
   const signin = () => {
@@ -36,8 +39,9 @@ const Login: NextPage = () => {
     signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
       .then((confirmationResult) => {
         // @ts-ignore
-        window.confirmationResult = confirmationResult;
         console.log("confirmationResult", confirmationResult);
+        setConfirmed(true);
+        setConfirmationResult(confirmationResult);
       })
       .catch((error: any) => {
         console.log(error);
@@ -49,6 +53,19 @@ const Login: NextPage = () => {
     setPhoneNumber(value);
   };
 
+  const handleConfirmationCodeChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const value = event.target?.value;
+    setConfirmationCode(value);
+  };
+
+  const confirm = () => {
+    confirmationResult.confirm(confirmationCode).then((result: any) => {
+      alert('ログイン成功')
+    })
+  };
+
   return (
     <div>
       <h1>Login Page</h1>
@@ -56,6 +73,16 @@ const Login: NextPage = () => {
       <button id="sign-in-button" onClick={signin}>
         submit
       </button>
+      {confirmed && (
+        <div>
+          <input
+            type="text"
+            value={confirmationCode}
+            onChange={handleConfirmationCodeChange}
+          />
+          <button onClick={confirm}>confirm</button>
+        </div>
+      )}
     </div>
   );
 };
